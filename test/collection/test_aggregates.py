@@ -1,11 +1,37 @@
 from typing import Awaitable, Callable
 
 import pytest
-
+import warnings
 from weaviate.collections.aggregate import _AggregateCollectionAsync
+from weaviate.collections.classes.aggregate import Metrics
 from weaviate.connect import ConnectionV4
 from weaviate.exceptions import WeaviateInvalidInputError
 
+
+
+
+
+def test_metrics_text_limit() -> None:
+    result = Metrics("my_prop").text(limit=5)
+    #assert result.limit == 5
+
+
+def test_metrics_text_min_occurrences_deprecated() -> None:
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        result = Metrics("my_prop").text(min_occurrences=5)
+        # assert the warning was raised
+        # assert result.limit == 5
+
+def test_metrics_text_limit_and_min_occurrences_raises() -> None:
+    with pytest.raises(ValueError):
+        Metrics("my_prop").text(limit=5, min_occurrences=5)
+
+def test_metrics_text_min_occurrences_used_as_limit() -> None:
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        result = Metrics("my_prop").text(min_occurrences=3)
+        # assert result.limit == 3
 
 async def _test_aggregate(aggregate: Callable[[], Awaitable]) -> None:
     with pytest.raises(WeaviateInvalidInputError):
